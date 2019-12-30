@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  release:
+    name: Release Bindings
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: src/github.com/kubenav/bind
+
+      - name: Setup Go 1.13
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+
+      - name: Set GOPATH
+        run: |
+          echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)/bind"
+          echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bind/bin"
+        shell: bash
+
+      - name: Install Dependencies
+        run: |
+          cd $GOPATH/src/github.com/kubenav/bind
+          make dependencies
+
+      - name: Generate Bindings (Android)
+        # We must build the Android bindings on Ubuntu,
+        # because the macOS used for GitHub Actions contains an outdated NDK version.
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cd $GOPATH/src/github.com/kubenav/bind
+          gomobile init
+          make bindings-android
+
+      - name: Generate Bindings (iOS)
+        if: matrix.os == 'macos-latest'
+        # We must unset the ANDROID_HOME and ANDROID_NDK_HOME environment variables,
+        # otherwise gomobile tries to generate the bindings for Android.
+        run: |
+          cd $GOPATH/src/github.com/kubenav/bind
+          unset ANDROID_HOME
+          unset ANDROID_NDK_HOME
+          gomobile init
+          make bindings-ios
+
+      - name: Upload Bindings to Release (Android)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cd $GOPATH/src/github.com/kubenav/bind
+          ./upload.sh request.aar-*.tar.gz application/gzip
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+
+      - name: Upload Bindings to Release (iOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd $GOPATH/src/github.com/kubenav/bind
+          ./upload.sh Request.framework-*.tar.gz application/gzip
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
