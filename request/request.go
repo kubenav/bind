@@ -22,7 +22,7 @@ type APIError struct {
 }
 
 // Do runs the given HTTP request.
-func Do(method, url, body, certificateAuthorityData, clientCertificateData, clientKeyData, token string) (string, error) {
+func Do(method, url, body, certificateAuthorityData, clientCertificateData, clientKeyData, token, username, password string) (string, error) {
 	var tlsConfig *tls.Config
 	var err error
 
@@ -62,6 +62,10 @@ func Do(method, url, body, certificateAuthorityData, clientCertificateData, clie
 
 	if token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)
+	}
+
+	if username != "" && password != "" {
+		req.SetBasicAuth(username, password)
 	}
 
 	resp, err := client.Do(req)
