@@ -1,15 +1,13 @@
 REPO    ?= github.com/kubenav/bind
 VERSION ?= $(shell git describe --tags)
 
-.PHONY: bindings-android bindings-ios dependencies release-major release-minor release-patch
+.PHONY: bindings-android bindings-ios dependencies release-major release-minor release-patch test
 
 bindings-android:
-	mkdir -p bindings
 	GO111MODULE=off gomobile bind -o request.aar -target=android ${REPO}/request
 	tar -zcvf request.aar-${VERSION}-android.tar.gz request.aar
 
 bindings-ios:
-	mkdir -p bindings
 	GO111MODULE=off gomobile bind -o Request.framework -target=ios ${REPO}/request
 	tar -zcvf Request.framework-${VERSION}-ios.tar.gz Request.framework
 
@@ -36,3 +34,6 @@ release-patch:
 	git pull
 	git tag -a $(PATCHVERSION) -m 'Release $(PATCHVERSION)'
 	git push origin --tags
+
+test:
+	GO111MODULE=off go test -v ./...
