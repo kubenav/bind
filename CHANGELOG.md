@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/kubenav/bind/tree/1.1.0) (2020-01-24)
+
+[Full Changelog](https://github.com/kubenav/bind/compare/1.0.0...1.1.0)
+
+**Implemented enhancements:**
+
+- Add support for basic authentication [\#1](https://github.com/kubenav/bind/pull/1) ([ricoberger](https://github.com/ricoberger))
+
 ## [1.0.0](https://github.com/kubenav/bind/tree/1.0.0) (2019-12-30)
 
 [Full Changelog](https://github.com/kubenav/bind/compare/f274332df6eb98213a13610ee6a0cf455deaa5ba...1.0.0)
