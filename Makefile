@@ -1,7 +1,7 @@
 REPO    ?= github.com/kubenav/bind
 VERSION ?= $(shell git describe --tags)
 
-.PHONY: bindings-android bindings-ios dependencies release-major release-minor release-patch
+.PHONY: bindings-android bindings-ios dependencies release-major release-minor release-patch test
 
 bindings-android:
 	mkdir -p bindings
@@ -36,3 +36,6 @@ release-patch:
 	git pull
 	git tag -a $(PATCHVERSION) -m 'Release $(PATCHVERSION)'
 	git push origin --tags
+
+test:
+	GO111MODULE=off go test -v ./...
