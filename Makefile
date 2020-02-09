@@ -13,6 +13,7 @@ bindings-ios:
 
 dependencies:
 	GO111MODULE=off go get -u golang.org/x/mobile/cmd/gomobile
+	GO111MODULE=off go get -u github.com/aws/aws-sdk-go/...
 
 release-major:
 	$(eval MAJORVERSION=$(shell git describe --tags --abbrev=0 | sed s/v// | awk -F. '{print $$1+1".0.0"}'))
