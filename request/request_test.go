@@ -50,3 +50,30 @@ func TestDoNonexistingResource(t *testing.T) {
 
 	t.Logf(err.Error())
 }
+
+func TestAWSGetClusters(t *testing.T) {
+	accessKeyId := os.Getenv("AWS_ACCESS_KEY_ID")
+	secretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	region := os.Getenv("AWS_REGION")
+
+	data, err := AWSGetClusters(accessKeyId, secretAccessKey, region)
+	if err != nil {
+		t.Errorf("Could not get clusters: %s", err.Error())
+	}
+
+	t.Logf(data)
+}
+
+func TestAWSGetToken(t *testing.T) {
+	accessKeyId := os.Getenv("AWS_ACCESS_KEY_ID")
+	secretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	region := os.Getenv("AWS_REGION")
+	clusterID := os.Getenv("AWS_CLUSTER_ID")
+
+	data, err := AWSGetToken(accessKeyId, secretAccessKey, region, clusterID)
+	if err != nil {
+		t.Errorf("Could not get token: %s", err.Error())
+	}
+
+	t.Logf(data)
+}
