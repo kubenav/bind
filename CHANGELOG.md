@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/kubenav/bind/tree/1.2.0) (2020-02-09)
+
+[Full Changelog](https://github.com/kubenav/bind/compare/1.1.0...1.2.0)
+
+**Implemented enhancements:**
+
+- Add Support for EKS [\#2](https://github.com/kubenav/bind/pull/2) ([ricoberger](https://github.com/ricoberger))
+
 ## [1.1.0](https://github.com/kubenav/bind/tree/1.1.0) (2020-01-24)
 
 [Full Changelog](https://github.com/kubenav/bind/compare/1.0.0...1.1.0)
