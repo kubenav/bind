@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -39,11 +38,9 @@ func Do(method, url, body, certificateAuthorityData, clientCertificateData, clie
 	var tlsConfig *tls.Config
 	var err error
 
-	if certificateAuthorityData != "" {
-		tlsConfig, err = httpClientForRootCAs(certificateAuthorityData, clientCertificateData, clientKeyData)
-		if err != nil {
-			return "", err
-		}
+	tlsConfig, err = httpClientForRootCAs(certificateAuthorityData, clientCertificateData, clientKeyData)
+	if err != nil {
+		return "", err
 	}
 
 	client := &http.Client{
@@ -51,12 +48,6 @@ func Do(method, url, body, certificateAuthorityData, clientCertificateData, clie
 		Transport: &http.Transport{
 			TLSClientConfig: tlsConfig,
 			Proxy:           http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).DialContext,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
 		},
 	}
 
@@ -108,11 +99,15 @@ func Do(method, url, body, certificateAuthorityData, clientCertificateData, clie
 
 // httpClientForRootCAs return an HTTP client which trusts the provided root CAs.
 func httpClientForRootCAs(certificateAuthorityData, clientCertificateData, clientKeyData string) (*tls.Config, error) {
-	tlsConfig := tls.Config{RootCAs: x509.NewCertPool()}
-	rootCA := []byte(certificateAuthorityData)
+	tlsConfig := tls.Config{}
 
-	if !tlsConfig.RootCAs.AppendCertsFromPEM(rootCA) {
-		return nil, fmt.Errorf("no certs found in root CA file")
+	if certificateAuthorityData != "" {
+		tlsConfig := tls.Config{RootCAs: x509.NewCertPool()}
+		rootCA := []byte(certificateAuthorityData)
+
+		if !tlsConfig.RootCAs.AppendCertsFromPEM(rootCA) {
+			return nil, fmt.Errorf("no certs found in root CA file")
+		}
 	}
 
 	if clientCertificateData != "" && clientKeyData != "" {
