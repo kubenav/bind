@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/kubenav/bind/tree/1.3.0) (2020-03-09)
+
+[Full Changelog](https://github.com/kubenav/bind/compare/1.2.0...1.3.0)
+
+**Implemented enhancements:**
+
+- Add Support for Azure AKS Clusters [\#3](https://github.com/kubenav/bind/pull/3) ([ricoberger](https://github.com/ricoberger))
+
+**Fixed bugs:**
+
+- Make 'certificate-authority-data' optional [\#4](https://github.com/kubenav/bind/pull/4) ([ricoberger](https://github.com/ricoberger))
+
 ## [1.2.0](https://github.com/kubenav/bind/tree/1.2.0) (2020-02-09)
 
 [Full Changelog](https://github.com/kubenav/bind/compare/1.1.0...1.2.0)
