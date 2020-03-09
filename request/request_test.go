@@ -77,3 +77,18 @@ func TestAWSGetToken(t *testing.T) {
 
 	t.Logf(data)
 }
+
+func TestAzureGetClusters(t *testing.T) {
+	subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID")
+	clientID := os.Getenv("AZURE_CLIENT_ID")
+	clientSecret := os.Getenv("AZURE_CLIENT_SECRET")
+	tenantID := os.Getenv("AZURE_TENANT_ID")
+	resourceGroupName := os.Getenv("AZURE_RESOURCE_GROUP_NAME")
+
+	data, err := AzureGetClusters(subscriptionID, clientID, clientSecret, tenantID, resourceGroupName, true)
+	if err != nil {
+		t.Errorf("Could not get clusters: %s", err.Error())
+	}
+
+	t.Logf(data)
+}

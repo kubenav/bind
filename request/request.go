@@ -2,6 +2,7 @@ package request
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
@@ -10,13 +11,18 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-01-01/containerservice"
+	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"gopkg.in/yaml.v2"
 )
 
 type APIError struct {
@@ -194,4 +200,89 @@ func AWSGetToken(accessKeyId, secretAccessKey, region, clusterID string) (string
 	}
 
 	return fmt.Sprintf(`{"token": "k8s-aws-v1.%s"}`, base64.RawURLEncoding.EncodeToString([]byte(presignedURLString))), nil
+}
+
+// AzureGetClusters return all Kubeconfigs for all AKS clusters for the provided subscription and resource group.
+func AzureGetClusters(subscriptionID, clientID, clientSecret, tenantID, resourceGroupName string, admin bool) (string, error) {
+	ctx := context.Background()
+	client := containerservice.NewManagedClustersClient(subscriptionID)
+
+	authorizer, err := getAzureAuthorizer(clientID, clientSecret, tenantID)
+	if err != nil {
+		return "", err
+	}
+	client.Authorizer = authorizer
+
+	var clusters []string
+
+	for list, err := client.ListComplete(ctx); list.NotDone(); err = list.Next() {
+		if err != nil {
+			return "", err
+		}
+
+		var res containerservice.CredentialResults
+		name := *list.Value().Name
+
+		if admin {
+			res, err = client.ListClusterAdminCredentials(ctx, resourceGroupName, name)
+			if err != nil {
+				return "", err
+			}
+		} else {
+			res, err = client.ListClusterUserCredentials(ctx, resourceGroupName, name)
+			if err != nil {
+				return "", err
+			}
+		}
+
+		for _, kubeconfig := range *res.Kubeconfigs {
+			var kubeconfigJSON interface{}
+			err := yaml.Unmarshal(*kubeconfig.Value, &kubeconfigJSON)
+			if err != nil {
+				return "", err
+			}
+
+			kubeconfigJSON = convert(kubeconfigJSON)
+			kubeconfigJSONString, err := json.Marshal(kubeconfigJSON)
+			if err != nil {
+				return "", err
+			}
+
+			clusters = append(clusters, fmt.Sprintf("{name: \"%s_%s_%s\", kubeconfig: %s}", *kubeconfig.Name, resourceGroupName, name, kubeconfigJSONString))
+		}
+	}
+
+	return fmt.Sprintf("[%s]", strings.Join(clusters, ",")), nil
+}
+
+func getAzureAuthorizer(clientID, clientSecret, tenantID string) (autorest.Authorizer, error) {
+	oauthConfig, err := adal.NewOAuthConfig("https://login.microsoftonline.com/", tenantID)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := adal.NewServicePrincipalToken(*oauthConfig, clientID, clientSecret, "https://management.azure.com/")
+	if err != nil {
+		return nil, err
+	}
+
+	return autorest.NewBearerAuthorizer(token), nil
+}
+
+// convert the map[interface{}]interface{} returned from yaml.Unmarshal to a map[string]interface{} for the usage in json.Marshal.
+// See: https://stackoverflow.com/a/40737676
+func convert(i interface{}) interface{} {
+	switch x := i.(type) {
+	case map[interface{}]interface{}:
+		m2 := map[string]interface{}{}
+		for k, v := range x {
+			m2[k.(string)] = convert(v)
+		}
+		return m2
+	case []interface{}:
+		for i, v := range x {
+			x[i] = convert(v)
+		}
+	}
+	return i
 }
