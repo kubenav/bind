@@ -243,7 +243,7 @@ func AzureGetClusters(subscriptionID, clientID, clientSecret, tenantID, resource
 				return "", err
 			}
 
-			clusters = append(clusters, fmt.Sprintf("{name: \"%s_%s_%s\", kubeconfig: %s}", *kubeconfig.Name, resourceGroupName, name, kubeconfigJSONString))
+			clusters = append(clusters, fmt.Sprintf("{\"name\": \"%s_%s_%s\", \"kubeconfig\": %s}", *kubeconfig.Name, resourceGroupName, name, kubeconfigJSONString))
 		}
 	}
 
