@@ -92,3 +92,47 @@ func TestAzureGetClusters(t *testing.T) {
 
 	t.Logf(data)
 }
+
+func TestOIDCGetLink(t *testing.T) {
+	discoveryURL := os.Getenv("OIDC_DISCOVERY_URL")
+	clientID := os.Getenv("OIDC_CLIENT_ID")
+	clientSecret := os.Getenv("OIDC_CLIENT_SECRET")
+	redirectURL := os.Getenv("OIDC_REDIRECT_URL")
+
+	data, err := OIDCGetLink(discoveryURL, clientID, clientSecret, redirectURL)
+	if err != nil {
+		t.Errorf("Could not get OIDC link: %s", err.Error())
+	}
+
+	t.Logf(data)
+}
+
+func TestOIDCGetRefreshToken(t *testing.T) {
+	discoveryURL := os.Getenv("OIDC_DISCOVERY_URL")
+	clientID := os.Getenv("OIDC_CLIENT_ID")
+	clientSecret := os.Getenv("OIDC_CLIENT_SECRET")
+	redirectURL := os.Getenv("OIDC_REDIRECT_URL")
+	code := os.Getenv("OIDC_CODE")
+
+	data, err := OIDCGetRefreshToken(discoveryURL, clientID, clientSecret, redirectURL, code)
+	if err != nil {
+		t.Errorf("Could not get OIDC refresh token: %s", err.Error())
+	}
+
+	t.Logf(data)
+}
+
+func TestOIDCGetAccessToken(t *testing.T) {
+	discoveryURL := os.Getenv("OIDC_DISCOVERY_URL")
+	clientID := os.Getenv("OIDC_CLIENT_ID")
+	clientSecret := os.Getenv("OIDC_CLIENT_SECRET")
+	redirectURL := os.Getenv("OIDC_REDIRECT_URL")
+	refreshToken := os.Getenv("OIDC_REFRESH_TOKEN")
+
+	data, err := OIDCGetAccessToken(discoveryURL, clientID, clientSecret, redirectURL, refreshToken)
+	if err != nil {
+		t.Errorf("Could not get OIDC access token: %s", err.Error())
+	}
+
+	t.Logf(data)
+}
