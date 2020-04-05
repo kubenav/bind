@@ -21,6 +21,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/eks"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/coreos/go-oidc"
+	"golang.org/x/oauth2"
 	"gopkg.in/yaml.v2"
 )
 
@@ -280,4 +282,76 @@ func convert(i interface{}) interface{} {
 		}
 	}
 	return i
+}
+
+// OIDCGetLink returns the link for the configured OIDC provider. The Link can then be used by the user to login.
+func OIDCGetLink(discoveryURL, clientID, clientSecret, redirectURL string) (string, error) {
+	ctx := context.Background()
+	provider, err := oidc.NewProvider(ctx, discoveryURL)
+	if err != nil {
+		return "", err
+	}
+
+	oauth2Config := oauth2.Config{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		RedirectURL:  redirectURL,
+		Endpoint:     provider.Endpoint(),
+		Scopes:       []string{oidc.ScopeOpenID},
+	}
+
+	return fmt.Sprintf("{\"url\": \"%s\"}", oauth2Config.AuthCodeURL("", oauth2.AccessTypeOffline, oauth2.ApprovalForce)), nil
+}
+
+func OIDCGetRefreshToken(discoveryURL, clientID, clientSecret, redirectURL, code string) (string, error) {
+	ctx := context.Background()
+	provider, err := oidc.NewProvider(ctx, discoveryURL)
+	if err != nil {
+		return "", err
+	}
+
+	oauth2Config := oauth2.Config{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		RedirectURL:  redirectURL,
+		Endpoint:     provider.Endpoint(),
+		Scopes:       []string{oidc.ScopeOpenID},
+	}
+
+	oauth2Token, err := oauth2Config.Exchange(ctx, code)
+	if err != nil {
+		return "", err
+	}
+
+	idToken, ok := oauth2Token.Extra("id_token").(string)
+	if !ok {
+		return "", fmt.Errorf("could not get id token")
+	}
+
+	return fmt.Sprintf("{\"id_token\": \"%s\", \"refresh_token\": \"%s\", \"access_token\": \"%s\", \"expiry\": %d}", idToken, oauth2Token.RefreshToken, oauth2Token.AccessToken, oauth2Token.Expiry.Unix()), nil
+}
+
+// OIDCGetAccessToken is used to retrieve an access token from a refresh token.
+func OIDCGetAccessToken(discoveryURL, clientID, clientSecret, redirectURL, refreshToken string) (string, error) {
+	ctx := context.Background()
+	provider, err := oidc.NewProvider(ctx, discoveryURL)
+	if err != nil {
+		return "", err
+	}
+
+	oauth2Config := oauth2.Config{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		RedirectURL:  redirectURL,
+		Endpoint:     provider.Endpoint(),
+		Scopes:       []string{oidc.ScopeOpenID},
+	}
+
+	ts := oauth2Config.TokenSource(ctx, &oauth2.Token{RefreshToken: refreshToken})
+	token, err := ts.Token()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("{\"id_token\": \"%s\", \"refresh_token\": \"%s\", \"access_token\": \"%s\", \"expiry\": %d}", token.Extra("id_token"), token.RefreshToken, token.AccessToken, token.Expiry.Unix()), nil
 }

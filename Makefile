@@ -15,6 +15,8 @@ dependencies:
 	GO111MODULE=off go get -u golang.org/x/mobile/cmd/gomobile
 	GO111MODULE=off go get -u github.com/aws/aws-sdk-go/...
 	GO111MODULE=off go get -u github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2020-01-01/containerservice
+	GO111MODULE=off go get -u github.com/coreos/go-oidc
+	GO111MODULE=off go get -u golang.org/x/oauth2
 	GO111MODULE=off go get -u gopkg.in/yaml.v2
 
 release-major:
