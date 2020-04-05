@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0](https://github.com/kubenav/bind/tree/1.4.0) (2020-04-05)
+
+[Full Changelog](https://github.com/kubenav/bind/compare/1.3.1...1.4.0)
+
+**Implemented enhancements:**
+
+- Add support for OIDC [\#6](https://github.com/kubenav/bind/pull/6) ([ricoberger](https://github.com/ricoberger))
+
 ## [1.3.1](https://github.com/kubenav/bind/tree/1.3.1) (2020-03-11)
 
 [Full Changelog](https://github.com/kubenav/bind/compare/1.3.0...1.3.1)
