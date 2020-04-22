@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://github.com/kubenav/bind/tree/1.5.0) (2020-04-22)
+
+[Full Changelog](https://github.com/kubenav/bind/compare/1.4.0...1.5.0)
+
+**Implemented enhancements:**
+
+- Support insecure-skip-tls-verify and timeout [\#7](https://github.com/kubenav/bind/pull/7) ([ricoberger](https://github.com/ricoberger))
+
 ## [1.4.0](https://github.com/kubenav/bind/tree/1.4.0) (2020-04-05)
 
 [Full Changelog](https://github.com/kubenav/bind/compare/1.3.1...1.4.0)
