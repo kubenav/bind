@@ -36,17 +36,17 @@ type APIError struct {
 }
 
 // Do runs the given HTTP request.
-func Do(method, url, body, certificateAuthorityData, clientCertificateData, clientKeyData, token, username, password string) (string, error) {
+func Do(method, url, body, certificateAuthorityData, clientCertificateData, clientKeyData, token, username, password string, insecureSkipTLSVerify bool, timeout int64) (string, error) {
 	var tlsConfig *tls.Config
 	var err error
 
-	tlsConfig, err = httpClientForRootCAs(certificateAuthorityData, clientCertificateData, clientKeyData)
+	tlsConfig, err = httpClientForRootCAs(certificateAuthorityData, clientCertificateData, clientKeyData, insecureSkipTLSVerify)
 	if err != nil {
 		return "", err
 	}
 
 	client := &http.Client{
-		Timeout: 60 * time.Second,
+		Timeout: time.Duration(timeout) * time.Second,
 		Transport: &http.Transport{
 			TLSClientConfig: tlsConfig,
 			Proxy:           http.ProxyFromEnvironment,
@@ -100,7 +100,7 @@ func Do(method, url, body, certificateAuthorityData, clientCertificateData, clie
 }
 
 // httpClientForRootCAs return an HTTP client which trusts the provided root CAs.
-func httpClientForRootCAs(certificateAuthorityData, clientCertificateData, clientKeyData string) (*tls.Config, error) {
+func httpClientForRootCAs(certificateAuthorityData, clientCertificateData, clientKeyData string, insecureSkipTLSVerify bool) (*tls.Config, error) {
 	tlsConfig := tls.Config{}
 
 	if certificateAuthorityData != "" {
@@ -120,6 +120,8 @@ func httpClientForRootCAs(certificateAuthorityData, clientCertificateData, clien
 
 		tlsConfig.Certificates = []tls.Certificate{cert}
 	}
+
+	tlsConfig.InsecureSkipVerify = insecureSkipTLSVerify
 
 	return &tlsConfig, nil
 }
