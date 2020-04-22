@@ -1,11 +1,12 @@
 // Usage:
 //   export API_URL=
-//   export CERTIFICATE_AUTHORITY_DATA=
-//   export CLIENT_CERTIFICATE_DATA=
-//   export CLIENT_KEY_DATA=
+//   export CERTIFICATE_AUTHORITY_DATA=`echo -n "<BASE64>" | base64 --decode`
+//   export CLIENT_CERTIFICATE_DATA=`echo -n "<BASE64>" | base64 --decode`
+//   export CLIENT_KEY_DATA=`echo -n "<BASE64>" | base64 --decode`
 //   export API_TOKEN=
 //   export API_USERNAME=
 //   export API_PASSWORD=
+//   export INSECURE_SKIP_TLS_VERIFY=
 //
 //   make test
 package request
@@ -24,8 +25,13 @@ func TestDoNamespaces(t *testing.T) {
 	username := os.Getenv("API_USERNAME")
 	password := os.Getenv("API_PASSWORD")
 
+	var insecureSkipTLSVerify bool
+	if os.Getenv("INSECURE_SKIP_TLS_VERIFY") != "" {
+		insecureSkipTLSVerify = true
+	}
+
 	// Get namespaces
-	data, err := Do("GET", url+"/api/v1/namespaces", "", certificateAuthorityData, clientCertificateData, clientKeyData, token, username, password)
+	data, err := Do("GET", url+"/api/v1/namespaces", "", certificateAuthorityData, clientCertificateData, clientKeyData, token, username, password, insecureSkipTLSVerify, 5)
 	if err != nil {
 		t.Errorf("Could not get namespaces: %s", err.Error())
 	}
@@ -42,8 +48,13 @@ func TestDoNonexistingResource(t *testing.T) {
 	username := os.Getenv("API_USERNAME")
 	password := os.Getenv("API_PASSWORD")
 
+	var insecureSkipTLSVerify bool
+	if os.Getenv("INSECURE_SKIP_TLS_VERIFY") != "" {
+		insecureSkipTLSVerify = true
+	}
+
 	// Try to get nonexisting resource
-	_, err := Do("GET", url+"/api/v1/nonexisting-resource", "", certificateAuthorityData, clientCertificateData, clientKeyData, token, username, password)
+	_, err := Do("GET", url+"/api/v1/nonexisting-resource", "", certificateAuthorityData, clientCertificateData, clientKeyData, token, username, password, insecureSkipTLSVerify, 5)
 	if err == nil {
 		t.Errorf("Get resource instead of nonexisting resource error")
 	}
